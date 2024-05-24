@@ -2,7 +2,7 @@ import os, shutil
 
 # deletes the logs and checkpoints directories
 
-root = "/Users/malachy/Documents/3rd Year Project/Project-72-Classifying-cosmological-data-with-machine-learning/"
+root = "/home/malachy/3rd Year Project/Project-72-Classifying-cosmological-data-with-machine-learning/"
 logpath = os.path.join(root, "logs/")
 checkpointpath = os.path.join(root, "checkpoints/")
 

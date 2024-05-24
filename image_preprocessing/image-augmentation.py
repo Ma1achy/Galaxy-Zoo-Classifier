@@ -1,13 +1,7 @@
-import os, cv2
+import os, cv2, time   # noqa: E401
 import pandas as pd
 import numpy as np
-import time
-
-# duplicate images in dataset by applying augmentations to them.
-# create new subfolder with A appended to the start of the subfolder name and save the augmented images there.
-# do this for all images in the dataset, 4 times for each image, add an extra A to the subfolder name each time.
-# append the new images to the end of the catalog, keeping the original data associated with the image, but replace the file_loc with the new file_loc.
-# can apply multiple augmentations to the same image, i.e rotation by random angle, flipping, zoom, adding noise, de-noising ect.
+import argparse
 
 def read_parquet(path):
     """
@@ -50,7 +44,7 @@ def get_augmentations(image, RNG):
     aug_3 (str): The third augmentation applied.
     """
     
-    augmentations = np.random.choice(['None', 'Flip', 'Rotation', 'Scale', 'Blurr', 'Noise', 'Translation'], 3, replace = False)
+    augmentations = np.random.choice(['None', 'Flip', 'Rotation', 'Blurr', 'Noise', 'Scale', 'Translation'], 3, replace = False)
     aug_1, aug_2, aug_3 = augmentations
     
     for aug in augmentations:
@@ -134,7 +128,7 @@ def random_zoom(image, RNG):
     returns:
     image (np.array): The zoomed image.
     """
-    scale = RNG.uniform(-0.75, 1.5)
+    scale = RNG.uniform(-0.9, 1.5)
     rows, cols, dim = image.shape
     M = cv2.getRotationMatrix2D((cols/2, rows/2), 0, scale)
     image = cv2.warpAffine(image, M, (cols, rows))
@@ -209,13 +203,16 @@ def random_translation(image, RNG):
     image (np.array): The translated image.
     """
     rows, cols, dim = image.shape
-    tx = RNG.uniform(-0.25, 0.25) * cols
-    ty = RNG.uniform(-0.25, 0.25) * rows
+    max_shift_pixels = 15
+    
+    tx = RNG.uniform(-max_shift_pixels/cols, max_shift_pixels/cols) * cols
+    ty = RNG.uniform(-max_shift_pixels/rows, max_shift_pixels/rows) * rows
+    
     M = np.float32([[1, 0, tx], [0, 1, ty]])
     image = cv2.warpAffine(image, M, (cols, rows))
     return image
 
-def augment_images(pandas_df, max_iter, dataset_root, catalog, RNG):
+def augment_images(pandas_df, start_iter, max_iter, dataset_root, catalog, RNG):
     """
     Augment the images in the pandas_df by applying random augmentations to them.
     Save the augmented images to a new subfolder in the images directory.
@@ -232,7 +229,7 @@ def augment_images(pandas_df, max_iter, dataset_root, catalog, RNG):
     
     times = []
     
-    for iter in range(1, max_iter + 1):
+    for iter in range(start_iter, max_iter + 1):
 
         new_pandas_df = pd.DataFrame()
         
@@ -240,62 +237,79 @@ def augment_images(pandas_df, max_iter, dataset_root, catalog, RNG):
             
             start_time = time.time()
             image = pandas_df.loc[idx, 'file_loc']
-            image_data = pandas_df.loc[idx].copy()
-            image = open_image(image)
-            image, aug_1, aug_2, aug_3  = get_augmentations(image, RNG)
             
-            image_subfolder = f"Augmented-{iter}-{image_data['subfolder']}"
-            image_name = f"A{iter}-{aug_1}-{aug_2}-{aug_3}-{image_data['filename']}"
+            if  os.path.exists(image):
+                
+                image_data = pandas_df.loc[idx].copy()
+                image = open_image(image)
+                
+                image, aug_1, aug_2, aug_3  = get_augmentations(image, RNG)
+                
+                image_subfolder = f"Augmented-{iter}-{image_data['subfolder']}"
+                image_name = f"A{iter}-{aug_1}-{aug_2}-{aug_3}-{image_data['filename']}"
+                
+                sub_folder_path = os.path.join(dataset_root, 'images/', image_subfolder)
+                
+                if not os.path.exists(sub_folder_path):
+                    os.mkdir(sub_folder_path)
+                
+                image_path = os.path.join(sub_folder_path, image_name)
             
-            sub_folder_path = os.path.join(dataset_root, 'images/', image_subfolder)
-            
-            if not os.path.exists(sub_folder_path):
-                os.mkdir(sub_folder_path)
-            
-            image_path = os.path.join(sub_folder_path, image_name)
-        
-            image_data['subfolder'] = image_subfolder
-            image_data['filename'] = image_name
-            image_data['file_loc'] = image_path
-            
-            new_pandas_df = new_pandas_df._append(image_data, ignore_index = True)
-            
-            cv2.imwrite(image_data['file_loc'], image)
-            
-            end_time = time.time()
-            iter_time = end_time - start_time
-            times.append(iter_time)
-            
-            if len(times) > 1024:
-                times = times[:len(times)//2]
+                image_data['subfolder'] = image_subfolder
+                image_data['filename'] = image_name
+                image_data['file_loc'] = image_path
+                
+                new_pandas_df = new_pandas_df._append(image_data, ignore_index = True)
+                
+                cv2.imwrite(image_data['file_loc'], image)
+                
+                end_time = time.time()
+                iter_time = end_time - start_time
+                times.append(iter_time)
+                
+                if len(times) > 1024:
+                    times = times[:len(times)//2]
 
-            if times == []:
-                mean_time = None
+                if times == []:
+                    mean_time = None
+                else:
+                    mean_time = np.mean(times)
+                
+                print(f"iter: {iter}/{max_iter} \t | {idx}/{len(pandas_df['file_loc'])} \t | ETA: {(mean_time * (len(pandas_df['file_loc']) - idx))/3600 :.2f} hr \t | [{image_subfolder}/{image_name}] \t\t\t", end = '\r', flush
+                = True)
+                
             else:
-                mean_time = np.mean(times)
-            
-            print(f"iter: {iter}/{max_iter} \t | {idx}/{len(pandas_df['file_loc'])} \t | ETA: {mean_time * (len(pandas_df['file_loc']) - idx):.2e}s \t | [{image_subfolder}/{image_name}] \t\t\t", end = '\r', flush
-            = True)
-            
+                print(f"\033[31mFile not found: [{image}]\033[0m")
+                continue
+
         # save the new_pandas_df to file
         new_pandas_df.to_parquet(f"{dataset_root}/augmented_{iter}_{catalog}")
 
-dataset_root = "/Users/malachy/Documents/3rd Year Project/Project-72-Classifying-cosmological-data-with-machine-learning/galaxyzoo2-dataset-processed"
-train_catalog = "gz2_train_catalog.parquet"
-test_catalog = "gz2_test_catalog.parquet"
+def main(dataset_root, train_catalog, test_catalog, start_iter, max_iter, seed):
+    
+    train_catalog_path = os.path.join(dataset_root, train_catalog)
+    test_catalog_path = os.path.join(dataset_root, test_catalog)
 
-train_catalog_path = os.path.join(dataset_root, train_catalog)
-test_catalog_path = os.path.join(dataset_root, test_catalog)
+    train_df = read_parquet(train_catalog_path)
+    test_df = read_parquet(test_catalog_path)
+    RNG = np.random.default_rng(seed)
 
-train_df = read_parquet(train_catalog_path)
-test_df = read_parquet(test_catalog_path)
-max_iter = 1
+    augment_images(train_df, start_iter,  max_iter, dataset_root, train_catalog, RNG)
+    augment_images(test_df, start_iter, max_iter, dataset_root, test_catalog, RNG)
 
-seed = 1
-RNG = np.random.default_rng(seed)
+if __name__ == "__main__":
+    """Run `python image-augmentation.py --help` for argument information"""
+    parser = argparse.ArgumentParser(prog = "image-augmentation.py")
+    
+    parser.add_argument("-root",      "--dataset_root",      type = str,     default = r"/home/malachy/3rd Year Project/Project-72-Classifying-cosmological-data-with-machine-learning/galaxyzoo2-dataset-augmented", help = "(str) The path to the dataset root directory")
+    parser.add_argument("-train",     "--train_catalog",     type = str,     default = r"gz2_train_catalog.parquet",   help = "(str) The name of the training catalog file")
+    parser.add_argument("-test",      "--test_catalog",      type = str,     default = r"gz2_test_catalog.parquet",    help = "(str) The name of the testing catalog file")
+    
+    parser.add_argument("-start",    "--start_iter",         type = int,     default = 1,                              help = "(int) The starting iteration number")
+    parser.add_argument("-max",      "--max_iter",           type = int,     default = 2,                              help = "(int) The number of times to augment the images")
+    parser.add_argument("-s",        "--seed",               type = int,     default = 0,                              help = "(int) The seed for the random number generator")
 
-augment_images(pandas_df = train_df, max_iter = max_iter, dataset_root = dataset_root, catalog = train_catalog, RNG = RNG)
-augment_images(pandas_df = test_df, max_iter = max_iter, dataset_root = dataset_root, catalog = test_catalog, RNG = RNG)
-
-# should probably manually delete the duplicate catalogs created by the augmentation process, but
-# I won't make a script to do that as its also handy to keep them around incase something breaks.
+    args = parser.parse_args()
+    kwargs = vars(args)
+    main(**kwargs)
+    

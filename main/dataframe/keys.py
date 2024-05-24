@@ -9,26 +9,101 @@ def get_keys(class_labels):
     keys (list): the keys of the class labels
     """
     match class_labels:
-        case 'binary':
-            keys = [
-            'smooth-or-featured-gz2_smooth_fraction',
-            ]
-            return keys
-    
+        
         case'Q0':
             keys = [
-                'smooth-or-featured-gz2_smooth_fraction',
-                'smooth-or-featured-gz2_featured-or-disk_fraction',
-                'smooth-or-featured-gz2_artifact_fraction',
+                # Q0/ Smooth or Featured?
+                'smooth-or-featured-gz2_smooth_fraction',  # 1 =  'smooth-or-featured-gz2_smooth_fraction' 0 = 'smooth-or-featured-gz2_featured-or-disk_fraction',
             ] 
             return keys
-    
+        
+        case 'Q1':
+            keys = [
+                # Q1/ Disk Edge On?
+                'disk-edge-on-gz2_yes_fraction', # 1 = 'disk-edge-on-gz2_yes_fraction' 0 = 'disk-edge-on-gz2_no_fraction',
+            ]
+            return keys
+        
+        case 'Q2':
+            keys = [
+                # Q2/ Has spiral arms?
+                'has-spiral-arms-gz2_yes_fraction', # 1 = 'has-spiral-arms-gz2_yes_fraction', 0 = 'has-spiral-arms-gz2_no_fraction'
+            ]
+            return keys
+        
+        case 'Q3':
+            keys = [
+                # Q3/ Bar?
+                'bar-gz2_yes_fraction', # 1 = 'bar-gz2_yes_fraction', 0 = 'bar-gz2_no_fraction'
+            ]
+            return keys
+        
+        case 'Q4':
+            keys = [
+                # Q4/ Bulge size?
+                'bulge-size-gz2_dominant_fraction',
+                'bulge-size-gz2_obvious_fraction',
+                'bulge-size-gz2_just-noticeable_fraction',
+            ]
+            return keys
+        
+        case 'Q5':
+            keys = [
+                # Q5/ Something odd?
+                'something-odd-gz2_yes_fraction', # 1 = 'something-odd-gz2_yes_fraction', 0 = 'something-odd-gz2_no_fraction',
+            ]
+            return keys
+        
+        case 'Q6':
+            keys = [
+                # Q6/ Round?
+                'how-rounded-gz2_round_fraction',
+                'how-rounded-gz2_in-between_fraction',
+                'how-rounded-gz2_cigar_fraction',
+            ]
+            return keys
+        
+        case 'Q7':
+            keys = [
+                # Q7/ Bulge shape?
+                'bulge-shape-gz2_round_fraction', # 1 = 'bulge-shape-gz2_round_fraction', 0 = 'bulge-shape-gz2_boxy_fraction'
+            ]
+            return keys
+        
+        case 'Q8':
+            keys = [
+                # Q8/ Spiral winding?
+                'spiral-winding-gz2_tight_fraction',
+                'spiral-winding-gz2_medium_fraction',
+                'spiral-winding-gz2_loose_fraction',
+            ]
+            return keys
+        
+        case 'Q9':
+            keys = [
+                # Q9/ Spiral arms count?
+                'spiral-arm-count-gz2_1_fraction',
+                'spiral-arm-count-gz2_2_fraction',
+                'spiral-arm-count-gz2_3_fraction',
+                'spiral-arm-count-gz2_4_fraction',
+                'spiral-arm-count-gz2_more-than-4_fraction',
+                'spiral-arm-count-gz2_cant-tell_fraction',
+            ]
+            return keys
+        
+        case 'Q10':
+            keys = [
+                # Q10/ Bulge?
+                'bulge-gz2-yes_fraction',  # 1 = 'bulge-gz2-yes_fraction', 0 = 'bulge-gz2-no_fraction'
+            ]
+            return keys
+        
         case 'all':
             keys = [
                 # Q0/ Smooth or Featured?
                 'smooth-or-featured-gz2_smooth_fraction',
                 'smooth-or-featured-gz2_featured-or-disk_fraction',
-                'smooth-or-featured-gz2_artifact_fraction',
+                # 'smooth-or-featured-gz2_artifact_fraction', remove as it's so uncommon its basically impossible to classify well
                 
                 # Q1/ Disk Edge On?
                 'disk-edge-on-gz2_yes_fraction',
@@ -46,7 +121,6 @@ def get_keys(class_labels):
                 'bulge-size-gz2_dominant_fraction',
                 'bulge-size-gz2_obvious_fraction',
                 'bulge-size-gz2_just-noticeable_fraction',
-                'bulge-size-gz2_no_fraction', # this is the same as 'bulge-size-gz2_none_fraction', should probably combine these into a single yes/no label pair.
                 
                 # Q5/ Something odd?
                 'something-odd-gz2_yes_fraction',
@@ -60,7 +134,51 @@ def get_keys(class_labels):
                 # Q7/ Bulge shape?
                 'bulge-shape-gz2_round_fraction',
                 'bulge-shape-gz2_boxy_fraction',
-                'bulge-shape-gz2_no-bulge_fraction',
+               
+                # Q8/ Spiral winding?
+                'spiral-winding-gz2_tight_fraction',
+                'spiral-winding-gz2_medium_fraction',
+                'spiral-winding-gz2_loose_fraction',
+                
+                # Q9/ Spiral arms count?
+                'spiral-arm-count-gz2_1_fraction',
+                'spiral-arm-count-gz2_2_fraction',
+                'spiral-arm-count-gz2_3_fraction',
+                'spiral-arm-count-gz2_4_fraction',
+                'spiral-arm-count-gz2_more-than-4_fraction',
+                'spiral-arm-count-gz2_cant-tell_fraction',
+                
+                # Q10/ Bulge?
+                'bulge-gz2-yes_fraction',
+                'bulge-gz2-no_fraction',
+            ]
+            
+        case 'all-features':
+            keys = [
+                # Q0/ Smooth or Featured?
+                'smooth-or-featured-gz2_smooth_fraction', # 1 =  'smooth-or-featured-gz2_smooth_fraction' 0 = 'smooth-or-featured-gz2_featured-or-disk_fraction',
+                
+                # Q1/ Disk Edge On?
+                'disk-edge-on-gz2_yes_fraction', # 1 = 'disk-edge-on-gz2_yes_fraction' 0 = 'disk-edge-on-gz2_no_fraction',
+                
+                # Q2/ Has spiral arms?
+                'has-spiral-arms-gz2_yes_fraction', # 1 = 'has-spiral-arms-gz2_yes_fraction', 0 = 'has-spiral-arms-gz2_no_fraction'
+                
+                # Q3/ Bar?
+                'bar-gz2_yes_fraction', # 1 = 'bar-gz2_yes_fraction', 0 = 'bar-gz2_no_fraction'
+                
+                # Q4/ Bulge size?
+                'bulge-size-gz2_dominant_fraction',
+                'bulge-size-gz2_obvious_fraction',
+                'bulge-size-gz2_just-noticeable_fraction',
+                
+                # Q6/ Round?
+                'how-rounded-gz2_round_fraction',
+                'how-rounded-gz2_in-between_fraction',
+                'how-rounded-gz2_cigar_fraction',
+                
+                # Q7/ Bulge shape?
+                'bulge-shape-gz2_round_fraction', # 1 = 'bulge-shape-gz2_round_fraction', 0 = 'bulge-shape-gz2_boxy_fraction'
                 
                 # Q8/ Spiral winding?
                 'spiral-winding-gz2_tight_fraction',
@@ -74,27 +192,34 @@ def get_keys(class_labels):
                 'spiral-arm-count-gz2_4_fraction',
                 'spiral-arm-count-gz2_more-than-4_fraction',
                 'spiral-arm-count-gz2_cant-tell_fraction',
+                
+                # Q10/ Bulge?
+                'bulge-gz2-yes_fraction', # 1 = 'bulge-gz2-yes_fraction', 0 = 'bulge-gz2-no_fraction'
             ]
+            
             return keys
         
         case 'reduced':
             keys = [
                 # Q0/ Smooth or Featured?
                 'smooth-or-featured-gz2_smooth_fraction',
-                'smooth-or-featured-gz2_featured-or-disk_fraction',
-                'smooth-or-featured-gz2_artifact_fraction',
                 
                 # Q1/ Disk Edge On?
                 'disk-edge-on-gz2_yes_fraction',
-                'disk-edge-on-gz2_no_fraction',
                 
                 # Q2/ Has spiral arms?
                 'has-spiral-arms-gz2_yes_fraction',
-                'has-spiral-arms-gz2_no_fraction',
                 
                 # Q3/ Bar?
                 'bar-gz2_yes_fraction',
-                'bar-gz2_no_fraction',
+                
+                # Q6/ Round?
+                'how-rounded-gz2_round_fraction',
+                'how-rounded-gz2_in-between_fraction',
+                'how-rounded-gz2_cigar_fraction',
+                
+                # Q10/ bulge?
+                'bulge-gz2-yes_fraction'
             ]
             return keys
         case _:
@@ -158,6 +283,10 @@ def class_labels_to_question():
             'spiral-arm-count-gz2_4_fraction': 9,
             'spiral-arm-count-gz2_more-than-4_fraction': 9,
             'spiral-arm-count-gz2_cant-tell_fraction': 9,
+            
+            #Q10/ Bulge?
+            'bulge-gz2-yes_fraction': 10,
+            'bulge-gz2-no_fraction': 10,
     }
     
     return question_dict
