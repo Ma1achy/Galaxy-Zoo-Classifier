@@ -1,0 +1,96 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit tests / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---------- Environments ----------
+.env
+.venv/
+env/
+venv/
+ENV/
+# (.python-version is committed on purpose — it pins the interpreter for uv)
+
+# ---------- Jupyter ----------
+.ipynb_checkpoints/
+
+# ---------- Editors / IDEs ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------- macOS ----------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ---------- Windows ----------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---------- Linux ----------
+.directory
+.Trash-*
+
+# ---------- Project: data & training artefacts ----------
+# Galaxy Zoo 2 dataset (fetched separately — far too large to commit)
+data/
+datasets/
+
+# Model checkpoints, saved models and training logs
+checkpoints/
+logs/
+runs/
+saved_model/
+*.h5
+*.keras
+*.weights.h5
+events.out.tfevents.*
+
+# Generated / augmented imagery and render output
+augmented/
+rendered/
+results/
